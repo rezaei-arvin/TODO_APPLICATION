@@ -1,0 +1,103 @@
+﻿@page "/Todo"
+
+<h1>Todo Application</h1>
+
+<form>
+	<div class="form-group">
+		<label for="newTodoInput">Add New Todo</label>
+		<input type="email" class="form-control" id="exampleInputEmail1" @bind="newTodoTitle" @bind:event="oninput">
+	</div>
+</form>
+
+<div class="my-3">Todos[@(todos.Where(current => (current.IsDone == false)).Count())]</div>
+
+<div class="row mt-3">
+	<div class="col">
+		<ul>
+			@foreach (var item in todos)
+			{
+				<li class="mb-2">
+					<button type="button" class="btn btn-sm btn-danger" @onclick="() => DeleteSelectedItem(item)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+							<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+							<path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+						</svg>
+					</button>
+					<input type="checkbox" @bind="item.IsDone">
+					<label>@(item.Title)</label>
+				</li>
+			}
+		</ul>
+	</div>
+</div>
+
+<div class="mt-3">
+	<button type="button" class="btn btn-primary" @onclick="() => AddNewItem()">Add new Item</button>
+	<button type="button" class="btn btn-danger" @onclick="() => DeleteLastItem()">Delete Last Item</button>
+</div>
+
+@code {
+
+	protected override void OnInitialized()
+	{
+		todos = new List<Models.TodoItem>();
+
+		for (int index = 1; index <= 10; index++)
+		{
+			var todoItem = new Models.TodoItem()
+				{
+					IsDone = (index % 2 != 0),
+					Title = $"Todo Item { index }",
+				};
+
+			todos.Add(todoItem);
+		}
+	}
+
+	public string newTodoTitle { get; set; }
+
+	private System.Collections.Generic.List<Models.TodoItem> todos;
+
+	private void AddNewItem()
+	{
+		if (string.IsNullOrWhiteSpace(newTodoTitle))
+		{
+			return;
+		}
+
+		bool hasAny =
+			todos
+			.Where(current => current.Title.ToLower() == newTodoTitle.ToLower())
+			.Any();
+
+		if (hasAny)
+		{
+			return;
+		}
+
+		var todoItem = new Models.TodoItem()
+			{
+				Title = newTodoTitle,
+				IsDone = false,
+			};
+
+		todos.Add(todoItem);
+	}
+
+	private void DeleteLastItem()
+	{
+		int todosCount = todos.Count;
+
+		if (todosCount <= 0)
+		{
+			return;
+		}
+
+		todos.RemoveAt(todosCount - 1);
+	}
+
+	private void DeleteSelectedItem(Models.TodoItem todoItem)
+	{
+		todos.Remove(todoItem);
+	}
+}
